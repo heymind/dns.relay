@@ -1,5 +1,7 @@
-package dev.idx0;
+package dev.idx0.test;
 
+import dev.idx0.DNSHeader;
+import dev.idx0.ExtendedDataInputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,7 +45,7 @@ class DNSHeaderTest {
                 (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x04, (byte) 0x3a,
                 (byte) 0xdf, (byte) 0xa8, (byte) 0x37
         };
-        DNSHeader header = new DNSHeader(bytes);
+        DNSHeader header = new DNSHeader(new ExtendedDataInputStream(bytes));
         assertEquals(header.getID(),0x277c);
         assertEquals(header.getOPCode(), DNSHeader.OPCODE.QUERY);
         assertEquals(header.isQueryFlag(),false);

@@ -7,7 +7,13 @@ public class DNSQuestion {
 
 
     private String Name;
-    private DNSQuestionType QuestionType;
+    private int QuestionType;
+
+    public DNSQuestion(DNSQuestion other) {
+        this.Name = other.Name;
+        this.QuestionType = other.QuestionType;
+        this.QuestionClass = other.QuestionClass;
+    }
 
     /**
      * Gets Name
@@ -28,12 +34,38 @@ public class DNSQuestion {
         return this;
     }
 
+
+    private int QuestionClass;
+
+    public DNSQuestion() {
+    }
+
+    public DNSQuestion(ExtendedDataInputStream in) throws IOException {
+
+        this
+                .setName(in.readDomainName())
+                .setQuestionType((in.readUnsignedShort()))
+                .setQuestionClass((in.readUnsignedShort()));
+    }
+
+    public void serializeToStream(ExtendedDataOutputStream out) throws IOException {
+        out.writeDomainName(this.getName());
+        out.writeShort((short) this.getQuestionType());
+        out.writeShort((short) this.getQuestionClass());
+    }
+
+    public byte[] toByteArray() throws IOException {
+        ExtendedDataOutputStream out = new ExtendedDataOutputStream();
+        serializeToStream(out);
+        return out.toByteArray();
+    }
+
     /**
      * Gets QuestionType
      *
      * @return value of QuestionType
      */
-    public DNSQuestionType getQuestionType() {
+    public int getQuestionType() {
         return QuestionType;
     }
 
@@ -42,8 +74,8 @@ public class DNSQuestion {
      *
      * @return DNSQuestion
      */
-    public DNSQuestion setQuestionType(DNSQuestionType questionType) {
-        this.QuestionType = questionType;
+    public DNSQuestion setQuestionType(int questionType) {
+        QuestionType = questionType;
         return this;
     }
 
@@ -52,7 +84,7 @@ public class DNSQuestion {
      *
      * @return value of QuestionClass
      */
-    public DNSQuestionClass getQuestionClass() {
+    public int getQuestionClass() {
         return QuestionClass;
     }
 
@@ -61,26 +93,8 @@ public class DNSQuestion {
      *
      * @return DNSQuestion
      */
-    public DNSQuestion setQuestionClass(DNSQuestionClass questionClass) {
-        this.QuestionClass = questionClass;
+    public DNSQuestion setQuestionClass(int questionClass) {
+        QuestionClass = questionClass;
         return this;
-    }
-
-    private DNSQuestionClass QuestionClass;
-
-    public DNSQuestion(byte[] buf) throws IOException {
-        ExtendedDataInputStream in = new ExtendedDataInputStream(buf);
-        this
-                .setName(in.readDomainName())
-                .setQuestionType(DNSQuestionType.getByCode(in.readUnsignedShort()))
-                .setQuestionClass(DNSQuestionClass.getByCode(in.readUnsignedShort()));
-    }
-
-    public byte[] toByteArray() throws IOException {
-        ExtendedDataOutputStream out = new ExtendedDataOutputStream();
-        out.writeDomainName(this.getName());
-        out.writeShort((short) this.getQuestionType().getType());
-        out.writeShort((short) this.getQuestionClass().getQclass());
-        return out.toByteArray();
     }
 }

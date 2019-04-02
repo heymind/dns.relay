@@ -4,7 +4,27 @@ import java.io.IOException;
 
 public class DNSMessageResourceRecord {
     private String Name;
-    private DNSQuestionType QuestionType;
+
+    /**
+     * Set the value of QuestionType
+     *
+     * @return DNSMessageResourceRecord
+     */
+    public DNSMessageResourceRecord setQuestionType(int questionType) {
+        QuestionType = questionType;
+        return this;
+    }
+
+    private int QuestionType;
+
+    public DNSMessageResourceRecord(DNSMessageResourceRecord other) {
+        this.Name = other.Name;
+        this.QuestionType = other.QuestionType;
+        this.QuestionClass = other.QuestionClass;
+        this.TimeToLive = other.TimeToLive;
+        this.ResourceDataLength = other.ResourceDataLength;
+        this.ResourceData = other.ResourceData;
+    }
 
     /**
      * Gets Name
@@ -22,44 +42,6 @@ public class DNSMessageResourceRecord {
      */
     public DNSMessageResourceRecord setName(String name) {
         Name = name;
-        return this;
-    }
-
-    /**
-     * Gets QuestionType
-     *
-     * @return value of QuestionType
-     */
-    public DNSQuestionType getQuestionType() {
-        return QuestionType;
-    }
-
-    /**
-     * Set the value of QuestionType
-     *
-     * @return DNSMessageResourceRecord
-     */
-    public DNSMessageResourceRecord setQuestionType(DNSQuestionType questionType) {
-        QuestionType = questionType;
-        return this;
-    }
-
-    /**
-     * Gets QuestionClass
-     *
-     * @return value of QuestionClass
-     */
-    public DNSQuestionClass getQuestionClass() {
-        return QuestionClass;
-    }
-
-    /**
-     * Set the value of QuestionClass
-     *
-     * @return DNSMessageResourceRecord
-     */
-    public DNSMessageResourceRecord setQuestionClass(DNSQuestionClass questionClass) {
-        QuestionClass = questionClass;
         return this;
     }
 
@@ -111,32 +93,62 @@ public class DNSMessageResourceRecord {
         return this;
     }
 
-    private DNSQuestionClass QuestionClass;
+    /**
+     * Gets QuestionClass
+     *
+     * @return value of QuestionClass
+     */
+    public int getQuestionClass() {
+        return QuestionClass;
+    }
+
+    /**
+     * Set the value of QuestionClass
+     *
+     * @return DNSMessageResourceRecord
+     */
+    public DNSMessageResourceRecord setQuestionClass(int questionClass) {
+        QuestionClass = questionClass;
+        return this;
+    }
+
+    private int QuestionClass;
     private long TimeToLive;
     private int ResourceDataLength;
     private byte[] ResourceData;
 
-    public DNSMessageResourceRecord(byte[] buf) throws IOException {
-        ExtendedDataInputStream in = new ExtendedDataInputStream(buf);
+    public DNSMessageResourceRecord(ExtendedDataInputStream in) throws IOException {
         this
                 .setName(in.readDomainName())
-                .setQuestionType(DNSQuestionType.getByCode(in.readUnsignedShort()))
-                .setQuestionClass(DNSQuestionClass.getByCode(in.readUnsignedShort()))
+                .setQuestionType((in.readUnsignedShort()))
+                .setQuestionClass((in.readUnsignedShort()))
                 .setTimeToLive(in.readInt() & 0xFFFF_FFFFL);
         this.ResourceDataLength = in.readUnsignedShort();
-        ResourceData = new byte[in.available()];
+        ResourceData = new byte[ResourceDataLength];
         in.read(ResourceData);
+    }
+
+    public void serializeToStream(ExtendedDataOutputStream out) throws IOException {
+        out.writeDomainName(this.getName());
+        out.writeShort((short) this.getQuestionType());
+        out.writeShort((short) this.getQuestionClass());
+        out.writeInt((int) this.getTimeToLive());
+        out.writeShort((short) this.getResourceDataLength());
+        out.write(this.getResourceData());
     }
 
     public byte[] toByteArray() throws IOException {
         ExtendedDataOutputStream out = new ExtendedDataOutputStream();
-        out.writeDomainName(this.getName());
-        out.writeShort((short) this.getQuestionType().getType());
-        out.writeShort((short) this.getQuestionClass().getQclass());
-        out.writeInt((int) this.getTimeToLive());
-        out.writeShort((short) this.getResourceDataLength());
-        out.write(this.getResourceData());
-
+        serializeToStream(out);
         return out.toByteArray();
+    }
+
+    /**
+     * Gets QuestionType
+     *
+     * @return value of QuestionType
+     */
+    public int getQuestionType() {
+        return QuestionType;
     }
 }

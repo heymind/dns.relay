@@ -11,7 +11,23 @@ import java.util.Map;
  */
 public class DNSHeader {
 
-    DNSHeader(){}
+    public DNSHeader(){}
+
+    public DNSHeader(DNSHeader other) {
+        this.OPCode = other.OPCode;
+        this.AuthoritativeAnswerFlag = other.AuthoritativeAnswerFlag;
+        this.TruncationFlag = other.TruncationFlag;
+        this.RecursionDesiredFlag = other.RecursionDesiredFlag;
+        this.RecursionAvailableFlag = other.RecursionAvailableFlag;
+        this.ResponseCode = other.ResponseCode;
+        this.ID = other.ID;
+        this.QuestionCount = other.QuestionCount;
+        this.AnswerRecordCount = other.AnswerRecordCount;
+        this.AuthorityRecordCount = other.AuthorityRecordCount;
+        this.AdditionalRecordCount = other.AdditionalRecordCount;
+        this.QueryFlag = other.QueryFlag;
+    }
+
     /**
      * Gets ID
      *
@@ -375,8 +391,7 @@ public class DNSHeader {
     }
 
     private boolean QueryFlag;
-    public DNSHeader(byte[] buf) throws IOException {
-        ExtendedDataInputStream in = new ExtendedDataInputStream(buf);
+    public DNSHeader(ExtendedDataInputStream in) throws IOException {
         this.setID(in.readUnsignedShort());
         int flags = in.readUnsignedShort();
         this.setResponseCode(RCODE.getByCode(flags & 0xf));
@@ -389,17 +404,15 @@ public class DNSHeader {
         flags >>= 1;
         this.setAuthoritativeAnswerFlag((flags & 1) == 1);
         this.setOPCode(OPCODE.getByCode(flags & 0xf));
-        flags >>= 4;
-        this.setQueryFlag((flags & 1) == 1);
+        flags >>= 5;
+        this.setQueryFlag((flags & 1) == 0);
 
         this.setQuestionCount(in.readUnsignedShort())
                 .setAnswerRecordCount(in.readUnsignedShort())
                 .setAuthorityRecordCount(in.readUnsignedShort())
                 .setAdditionalRecordCount(in.readUnsignedShort());
     }
-
-    public byte[] toByteArray() throws IOException {
-        ExtendedDataOutputStream out = new ExtendedDataOutputStream();
+    public void serializeToStream(ExtendedDataOutputStream out) throws IOException{
         out.writeShort((short) this.getID());
         int flags = this.isQueryFlag() ? 0 : 1;
         flags <<= 4;
@@ -419,6 +432,10 @@ public class DNSHeader {
         out.writeShort((short) this.getAnswerRecordCount());
         out.writeShort((short) this.getAuthorityRecordCount());
         out.writeShort((short) this.getAdditionalRecordCount());
+    }
+    public byte[] toByteArray() throws IOException {
+        ExtendedDataOutputStream out = new ExtendedDataOutputStream();
+        serializeToStream(out);
         return out.toByteArray();
     }
 }

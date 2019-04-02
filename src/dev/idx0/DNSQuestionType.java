@@ -3,48 +3,24 @@ package dev.idx0;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum DNSQuestionType {
-    A(1),
-    NS(2),
-    MD(3),
-    MF(4),
-    CNAME(5),
-    SOA(6),
-    MB(7),
-    MG(8),
-    MR(9),
-    NULL(10),
-    WKS(11),
-    PTR(12),
-    HINFO(13),
-    MINFO(14),
-    MX(15),
-    TXT(16);
+public class DNSQuestionType {
 
-    private DNSQuestionType(int type) {
-        this.type = type;
-    }
+    public static final int A = (1);
+    public static final int NS = (2);
+    public static final int MD = (3);
+    public static final int MF = (4);
+    public static final int CNAME = (5);
+    public static final int SOA = (6);
+    public static final int MB = (7);
+    public static final int MG = (8);
+    public static final int MR = (9);
+    public static final int NULL = (10);
+    public static final int WKS = (11);
+    public static final int PTR = (12);
+    public static final int HINFO = (13);
+    public static final int MINFO = (14);
+    public static final int MX = (15);
+    public static final int TXT = (16);
 
-    private int type;
-
-    public int getType() {
-        return this.type;
-    }
-
-    public String toString() {
-        return String.valueOf(this.type);
-    }
-
-    static Map<Integer, DNSQuestionType> map = new HashMap<>();
-
-    static {
-        for (DNSQuestionType t : DNSQuestionType.values()) {
-            map.put(t.type, t);
-        }
-    }
-
-    public static DNSQuestionType getByCode(int code) {
-        return map.get(code);
-    }
 
 }
