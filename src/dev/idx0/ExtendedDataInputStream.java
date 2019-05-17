@@ -1,27 +1,13 @@
 package dev.idx0;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-class PositionByteArrayInputStream extends ByteArrayInputStream {
-
-        public PositionByteArrayInputStream(byte[] buf) {
-            super(buf);
-        }
-
-        public PositionByteArrayInputStream(byte[] buf, int offset, int length) {
-            super(buf, offset, length);
-        }
-        public int getPosition(){
-            return this.pos;
-        }
-}
 
 public class ExtendedDataInputStream extends DataInputStream {
-    private Map<Integer, String> perviousDomains = new HashMap<Integer, String>();
+    private Map<Integer, String> previousDomains = new HashMap<>();
 
     public ExtendedDataInputStream(byte[] buf) {
         super(new PositionByteArrayInputStream(buf));
@@ -30,9 +16,9 @@ public class ExtendedDataInputStream extends DataInputStream {
     private String readDomainName(String domainName) throws IOException {
         try {
             int partLength = this.readUnsignedByte();
-            if (partLength >= 0b11000000){ // MAGIC~ 这是一个压缩的报文，后面跟着是个指针
-                int point = ((partLength & 0b00111111)<< 8) +this.readUnsignedByte();
-                return this.perviousDomains.get(point);
+            if (partLength >= 0b11000000) { // MAGIC~ 这是一个压缩的报文，后面跟着是个指针
+                int point = ((partLength & 0b00111111) << 8) + this.readUnsignedByte();
+                return this.previousDomains.get(point);
 
             }
             if (partLength == 0) return domainName;
@@ -47,10 +33,10 @@ public class ExtendedDataInputStream extends DataInputStream {
 
     }
 
-    public String readDomainName() throws IOException {
-        int pos = ((PositionByteArrayInputStream)(this.in)).getPosition();
+    String readDomainName() throws IOException {
+        int pos = ((PositionByteArrayInputStream) (this.in)).getPosition();
         String domain = this.readDomainName(null);
-        this.perviousDomains.put(pos,domain);
+        this.previousDomains.put(pos, domain);
         return domain;
     }
 

@@ -1,55 +1,30 @@
 package dev.idx0;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-public class DNSPackage {
+
+@Data
+@Accessors(chain = true)
+@AllArgsConstructor
+class DNSPackage {
     private InetSocketAddress addr;
     private DNSMessage msg;
 
-    DNSPackage(InetSocketAddress addr,DNSMessage msg){
-        this.addr = addr;
-        this.msg = msg;
-    }
-    DNSPackage(InetSocketAddress addr,byte[] buf) throws IOException {
-        this(addr,new DNSMessage(buf));
+
+    DNSPackage(InetAddress host, int port, byte[] buf) throws IOException {
+        this(new InetSocketAddress(host, port), new DNSMessage(buf));
     }
 
-    /**
-     * Gets addr
-     *
-     * @return value of addr
-     */
-    public InetSocketAddress getAddr() {
-        return addr;
+    public DatagramPacket toDatagramPacket() throws IOException {
+        byte[] data = msg.toByteArray();
+        return new DatagramPacket(data, data.length, getAddr().getAddress(), getAddr().getPort());
     }
 
-    /**
-     * Set the value of addr
-     *
-     * @return DNSPackage
-     */
-    public DNSPackage setAddr(InetSocketAddress addr) {
-        this.addr = addr;
-        return this;
-    }
-
-    /**
-     * Gets msg
-     *
-     * @return value of msg
-     */
-    public DNSMessage getMsg() {
-        return msg;
-    }
-
-    /**
-     * Set the value of msg
-     *
-     * @return DNSPackage
-     */
-    public DNSPackage setMsg(DNSMessage msg) {
-        this.msg = msg;
-        return this;
-    }
 }
