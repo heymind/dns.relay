@@ -79,7 +79,7 @@ class Relay {
 
                     }
                 }
-            }, 10);
+            }, 5000);
             return new DNSPackage(upstream, msg);
         }
 

@@ -38,7 +38,7 @@ public class DNSMessageResourceRecord {
         ResourceData = new byte[ResourceDataLength];
         in.read(ResourceData);
     }
-
+    
     void serializeToStream(ExtendedDataOutputStream out) throws IOException {
         out.writeDomainName(getName());
         out.writeShort((short) getQuestionType());

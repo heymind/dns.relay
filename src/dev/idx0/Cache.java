@@ -1,13 +1,13 @@
 package dev.idx0;
 
+import lombok.extern.java.Log;
+
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-
+@Log
 public class Cache {
-    private List<CacheItem> cacheItems = new ArrayList<>();
+    private List<CacheItem> cacheItems = new LinkedList<>();
 
     class CacheItem {
         private DNSMessageResourceRecord resourceRecord;
@@ -63,33 +63,38 @@ public class Cache {
 
     }
 
-    public void set(DNSMessageResourceRecord rr) {
+    public  void  set(DNSMessageResourceRecord rr) {
         long current = getCurrentTimeStamp();
-        CacheItem new_item = new CacheItem(rr, rr.getTimeToLive() +current);
-        for (CacheItem item : cacheItems) {
+        CacheItem newItem = new CacheItem(rr, rr.getTimeToLive() +current);
+        Iterator<CacheItem> iter = cacheItems.iterator();
+        while (iter.hasNext()){
+
+            CacheItem item = iter.next();
             if (item.getInvalidTimeStamp() < current) {
-                cacheItems.remove(item);
+                iter.remove();
                 continue;
             }
-            DNSMessageResourceRecord item_rr = item.getResourceRecord();
-            if (item_rr.getName().equals(rr.getName()) &&
-                    item_rr.getQuestionClass() == rr.getQuestionType() &&
-                    item_rr.getQuestionClass() == rr.getQuestionClass()){
+            DNSMessageResourceRecord itemRR = item.getResourceRecord();
+            if (itemRR.getName() != null && itemRR.getName().equals(rr.getName()) &&
+                    itemRR.getQuestionClass() == rr.getQuestionType() &&
+                    itemRR.getQuestionClass() == rr.getQuestionClass()){
                 // cache update !
                 cacheItems.remove(item);
                 break;
             }
         }
-        cacheItems.add(new_item);
+        cacheItems.add(newItem);
 
     }
 
-    public List<DNSMessageResourceRecord> get(DNSQuestion q) {
+    public  List<DNSMessageResourceRecord> get(DNSQuestion q) {
         long current = getCurrentTimeStamp();
         List<DNSMessageResourceRecord> result = new ArrayList<>();
-        for (CacheItem item : cacheItems) {
+        Iterator<CacheItem> iter = cacheItems.iterator();
+        while (iter.hasNext()){
+            CacheItem item = iter.next();
             if (item.getInvalidTimeStamp() < current) {
-                cacheItems.remove(item);
+                iter.remove();
                 continue;
             }
             DNSMessageResourceRecord rr = item.getResourceRecord();
@@ -97,6 +102,7 @@ public class Cache {
                     q.getQuestionClass() == rr.getQuestionType() &&
                     q.getQuestionClass() == rr.getQuestionClass()) {
                 // cache hit
+                log.info("缓存命中了！");
                 rr.setTimeToLive(item.getInvalidTimeStamp() - current);
                 result.add(rr);
             }

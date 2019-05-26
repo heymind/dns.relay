@@ -16,7 +16,7 @@ import java.util.List;
 public class Server {
     private InetSocketAddress listen, upstream;
     private Relay relay;
-//    protected Cache cache;
+    protected Cache cache = new Cache();
     private Hosts hosts;
 
     Server(InetSocketAddress listen, InetSocketAddress upstream, Hosts hosts) {
@@ -58,6 +58,10 @@ public class Server {
         if (message.getQuestions().size() == 1) {
             log.fine("本次查询只有一个Question,尝试本地解析...");
             List<DNSMessageResourceRecord> RRs = lookUpHosts(message.getQuestions().get(0));
+            if(RRs.isEmpty()){
+                log.fine("尝试查询缓存");
+                RRs = cache.get(message.getQuestions().get(0));
+            }
             if (!RRs.isEmpty()) {
                 DNSMessage responseMessage = new DNSMessage();
                 DNSHeader header = new DNSHeader();
@@ -72,6 +76,9 @@ public class Server {
                 responseMessage.setAnswerRecords(RRs);
                 return responseMessage;
             }
+
+
+
         }
         return null;
     }
@@ -96,6 +103,7 @@ public class Server {
 
         } else {
             log.info("收到upstream返回的响应，原路返回。");
+            dnsPackage.getMsg().getAnswerRecords().forEach(rr -> cache.set(rr));
         }
         return relay.handle(dnsPackage).toDatagramPacket();
 
